@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 import sqlite3
+import threading
 import uuid
 from decimal import Decimal
 from pathlib import Path
@@ -147,6 +148,9 @@ class Database:
         self.path = Path(path)
         self._conn: sqlite3.Connection | None = None
         self._lock = asyncio.Lock()
+        # A cancelled coroutine releases its asyncio lock while to_thread keeps
+        # running. The native operation must retain ownership until it finishes.
+        self._thread_lock = threading.Lock()
         #: Set whenever a new event row is written, so SSE streams wake up
         #: immediately instead of polling on a fixed interval.
         self.event_written = asyncio.Event()
@@ -173,12 +177,17 @@ class Database:
         return conn
 
     async def connect(self) -> None:
-        await asyncio.to_thread(self.connect_sync)
+        await self._run(self.connect_sync)
 
     async def close(self) -> None:
-        if self._conn is not None:
-            await asyncio.to_thread(self._conn.close)
-            self._conn = None
+        def work() -> None:
+            if self._conn is not None:
+                self._conn.close()
+                self._conn = None
+
+        # Closing must wait for queries/transactions, including cancelled ones
+        # whose executor threads are still using the connection.
+        await self._run(work)
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -187,8 +196,12 @@ class Database:
         return self._conn
 
     async def _run(self, fn, *args):
+        def work():
+            with self._thread_lock:
+                return fn(*args)
+
         async with self._lock:
-            return await asyncio.to_thread(fn, *args)
+            return await asyncio.to_thread(work)
 
     # ----------------------------------------------------------------- batches
     async def create_batch(

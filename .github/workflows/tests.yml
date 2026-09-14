@@ -1,0 +1,89 @@
+name: tests
+
+# Runs the offline test suite. Every test uses fixtures or httpx.MockTransport:
+# no ScrapeCreators key, no God of Panel key, no network call, no paid order.
+# Real API verification stays opt-in through scripts/check_integrations.py,
+# which is deliberately NOT run here.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # No deployment-shaped variables are exported here on purpose. tests/conftest
+    # assigns every setting the suite needs (with assignment, not setdefault), so
+    # the run cannot depend on ambient credentials. An earlier workflow set
+    # ADMIN_PASSWORD to a value the login helper did not use and ten HTTP tests
+    # failed with 401 instead of 303.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest -q --timeout=60
+
+      - name: Run the dependency-free offline checks too
+        run: python scripts/offline_checks.py
+
+      - name: Check the integration script imports cleanly
+        run: python -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/check_integrations.py').read_text())"
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t comment-likes-dashboard:ci .
+
+      - name: Start it on a non-default port and probe /health
+        run: |
+          docker run -d --name app \
+            -e PORT=9123 \
+            -e ENVIRONMENT=production \
+            -e ADMIN_PASSWORD=ci-password-1234 \
+            -e SESSION_SECRET=ci-session-secret-that-is-long-enough-0123456789 \
+            -e DATABASE_PATH=/data/app.db \
+            -e COMMENT_READER=fixture \
+            -p 9123:9123 \
+            -v ci-data:/data \
+            comment-likes-dashboard:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:9123/health > /tmp/health.json; then break; fi
+            sleep 2
+          done
+          cat /tmp/health.json
+          grep -q '"status"' /tmp/health.json
+
+      - name: Confirm no secret is exposed by the health probe
+        run: |
+          ! grep -qiE '(api_key"[[:space:]]*:[[:space:]]*"[^"]+)|session_secret' /tmp/health.json
+
+      - name: Restart and confirm the volume keeps the database
+        run: |
+          docker exec app sh -c 'test -s /data/app.db'
+          docker restart app
+          sleep 8
+          docker exec app sh -c 'test -s /data/app.db'
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker logs app

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body
+  data-csrf="{{ csrf_token }}"
+  data-default-mode="{{ default_mode }}"
+  data-live-allowed="{{ 'yes' if live_allowed else 'no' }}"
+  data-max-links="{{ max_links }}">
+
+  <header class="topbar">
+    <div>
+      <h1>Comment likes</h1>
+      <p class="topbar-meta">
+        Keyword <b>{{ keyword }}</b> &middot; scope <b>{{ scope }}</b>
+        &middot; service <b>{{ service_id }}</b>
+      </p>
+      <p class="topbar-meta">
+        Reader
+        <b>{{ reader.adapter }}</b>
+        {% if reader.adapter == "fixture" %}
+        <span class="tag tag-demo">demo data &mdash; not TikTok</span>
+        {% elif reader.configured %}
+        <span class="tag tag-live-read">reading the live API</span>
+        {% else %}
+        <span class="tag tag-off">not configured</span>
+        {% endif %}
+        {% if reply_end_trusted %}
+        &middot; <span class="tag tag-warn">reply-count mismatches accepted</span>
+        {% endif %}
+      </p>
+    </div>
+    <form method="post" action="/logout">
+      <button type="submit" class="ghost">Sign out</button>
+    </form>
+  </header>
+
+  <main>
+    {% if not live_allowed %}
+    <section class="alert alert-block" role="status">
+      <b>Live ordering is off.</b>
+      {{ reader.blocker or "Set your God of Panel API key to enable Live mode." }}
+      Dry runs work now and place no orders.
+    </section>
+    {% endif %}
+
+    <section class="panel">
+      <h2>New run</h2>
+      <label for="links">TikTok video links, one per line (max {{ max_links }})</label>
+      <textarea id="links" rows="6" spellcheck="false"
+        placeholder="https://www.tiktok.com/@someone/video/7300000000000000001&#10;https://vm.tiktok.com/ZMabcdef/"></textarea>
+
+      <fieldset class="modes">
+        <legend>Mode</legend>
+        <label class="mode mode-dry">
+          <input type="radio" name="mode" value="dry_run" checked>
+          <span class="mode-name">Dry run</span>
+          <span class="mode-help">Analyse only. Nothing is bought.</span>
+        </label>
+        <label class="mode mode-live">
+          <input type="radio" name="mode" value="live" {% if not live_allowed %}disabled{% endif %}>
+          <span class="mode-name">Live</span>
+          <span class="mode-help">Submits real paid orders for this batch.</span>
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button id="start" type="button">Start</button>
+        <button id="stop" type="button" class="ghost" disabled>Stop queued links</button>
+        <button id="check-service" type="button" class="ghost">Check service &amp; balance</button>
+      </div>
+      <p id="form-message" class="message" role="status"></p>
+      <p id="service-message" class="message"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Quantity rules</h2>
+      <table class="tiers">
+        <caption>
+          Quantity is the number of <b>additional</b> likes ordered, based on the highest
+          like count observed anywhere in the scanned scope.
+        </caption>
+        <thead><tr><th scope="col">Top comment likes</th><th scope="col">Order</th></tr></thead>
+        <tbody>
+          {% for range_label, result in tiers %}
+          <tr><td>{{ range_label }}</td><td class="num">{{ result }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="footnote">
+        The tiers step down at 300 &rarr; 301 on purpose: 300 likes orders 500, and 301
+        orders 391. This is the formula as specified and it is not smoothed. The order is
+        additional likes only, so it is not a promise of overtaking the leading comment.
+      </p>
+    </section>
+
+    <section class="panel" id="results-panel">
+      <h2>Runs</h2>
+      <p id="connection" class="message"></p>
+      <div id="batches" class="batches">
+        <p class="empty">No runs yet. Paste a link above and start a dry run.</p>
+      </div>
+    </section>
+  </main>
+
+  <template id="batch-template">
+    <article class="batch">
+      <header>
+        <h3></h3>
+        <span class="badge mode-badge"></span>
+        <span class="badge state-badge"></span>
+        <button type="button" class="ghost small stop-batch">Stop</button>
+      </header>
+      <div class="items"></div>
+    </article>
+  </template>
+
+  <template id="item-template">
+    <div class="item">
+      <div class="item-head">
+        <span class="pos"></span>
+        <span class="badge outcome"></span>
+        <span class="badge delivery"></span>
+        <span class="elapsed num"></span>
+        <button type="button" class="ghost small toggle" aria-expanded="false">Details</button>
+      </div>
+      <p class="item-link"></p>
+      <dl class="item-key">
+        <div><dt>Owner</dt><dd class="owner"></dd></div>
+        <div><dt>Top likes</dt><dd class="top num"></dd></div>
+        <div><dt>Target likes</dt><dd class="tlikes num"></dd></div>
+        <div><dt>Quantity</dt><dd class="qty num"></dd></div>
+      </dl>
+      <div class="item-detail" hidden>
+        <dl>
+          <div><dt>Video ID</dt><dd class="vid"></dd></div>
+          <div><dt>Submitted link</dt><dd class="submitted"></dd></div>
+          <div><dt>Comment ID</dt><dd class="cid"></dd></div>
+          <div><dt>Comment text</dt><dd class="ctext"></dd></div>
+          <div><dt>Scan</dt><dd class="scan"></dd></div>
+          <div><dt>Scope limits</dt><dd class="scope-limits" hidden></dd></div>
+          <div><dt>Pages / comments</dt><dd class="counts num"></dd></div>
+          <div><dt>Estimated cost</dt><dd class="cost num"></dd></div>
+          <div><dt>Order ID</dt><dd class="oid"></dd></div>
+          <div><dt>Timings</dt><dd class="timings num"></dd></div>
+          <div><dt>Note</dt><dd class="note"></dd></div>
+        </dl>
+      </div>
+    </div>
+  </template>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

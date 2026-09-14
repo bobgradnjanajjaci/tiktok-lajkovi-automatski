@@ -1,0 +1,69 @@
+{
+  "provenance": "synthetic test data written for this repository; field names mirror the normalized model, not any provider's raw shape",
+  "video_id": "7300000000000000001",
+  "video_url": "https://www.tiktok.com/@creator.one/video/7300000000000000001",
+  "pages": [
+    {
+      "has_more": true,
+      "cursor_out": "c1",
+      "comments": [
+        {
+          "comment_id": "7300000000000000101",
+          "text": "first comment, no keyword",
+          "like_count": 42,
+          "reply_count": 0,
+          "owner_username": "alpha_reader",
+          "owner_user_id": "6100000000000000001"
+        },
+        {
+          "comment_id": "7300000000000000102",
+          "text": "Have you read MAEL VORRAN? Brilliant.",
+          "like_count": 7,
+          "reply_count": 1,
+          "owner_username": "@beta.fan",
+          "owner_user_id": "6100000000000000002"
+        }
+      ]
+    },
+    {
+      "has_more": false,
+      "cursor_out": null,
+      "comments": [
+        {
+          "comment_id": "7300000000000000103",
+          "text": "mael vorran again, later and more popular",
+          "like_count": 120,
+          "reply_count": 0,
+          "owner_username": "gamma",
+          "owner_user_id": "6100000000000000003"
+        },
+        {
+          "comment_id": "7300000000000000104",
+          "text": "top comment overall",
+          "like_count": 260,
+          "reply_count": 0,
+          "owner_username": "delta",
+          "owner_user_id": "6100000000000000004"
+        }
+      ]
+    }
+  ],
+  "replies": {
+    "7300000000000000102": [
+      {
+        "has_more": false,
+        "cursor_out": null,
+        "comments": [
+          {
+            "comment_id": "7300000000000000201",
+            "text": "a reply that is the real maximum",
+            "like_count": 301,
+            "reply_count": 0,
+            "owner_username": "epsilon",
+            "owner_user_id": "6100000000000000005"
+          }
+        ]
+      }
+    ]
+  }
+}

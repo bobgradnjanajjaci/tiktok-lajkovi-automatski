@@ -1,0 +1,64 @@
+{
+  "_comment": "Template only. Replace every value with facts from YOUR provider's published documentation, then set verified_by_operator to true. Do not put the API key in here; it belongs in READER_API_KEY.",
+  "verified_by_operator": false,
+  "provider_name": "REPLACE_WITH_PROVIDER_NAME",
+  "documented_ordering": "REPLACE_WITH_THE_ORDERING_THE_PROVIDER_DOCUMENTS",
+  "auth": {
+    "style": "header",
+    "name": "x-api-key"
+  },
+  "top_level": {
+    "method": "GET",
+    "path": "/REPLACE/comments",
+    "query": {
+      "video_id": "{video_id}",
+      "count": "{page_size}",
+      "cursor": "{cursor}"
+    },
+    "list_path": "data.comments",
+    "cursor_path": "data.cursor",
+    "has_more_path": "data.has_more",
+    "total_path": "data.total"
+  },
+  "replies": {
+    "method": "GET",
+    "path": "/REPLACE/comment-replies",
+    "query": {
+      "video_id": "{video_id}",
+      "comment_id": "{parent_id}",
+      "count": "{page_size}",
+      "cursor": "{cursor}"
+    },
+    "list_path": "data.comments",
+    "cursor_path": "data.cursor",
+    "has_more_path": "data.has_more"
+  },
+  "owner_lookup": {
+    "method": "GET",
+    "path": "/REPLACE/user",
+    "query": {
+      "user_id": "{user_id}"
+    },
+    "username_path": "data.unique_id"
+  },
+  "fields": {
+    "comment_id": "REPLACE",
+    "text": "REPLACE",
+    "like_count": "REPLACE",
+    "reply_count": "REPLACE",
+    "parent_comment_id": "REPLACE",
+    "owner_username": "REPLACE",
+    "owner_user_id": "REPLACE"
+  },
+  "capabilities": {
+    "supports_replies": false,
+    "supplies_owner_username": false,
+    "supports_owner_lookup": false,
+    "supports_exact_counts": false,
+    "max_page_size": 50
+  },
+  "limits": {
+    "requests_per_minute": null,
+    "max_comments_per_video": null
+  }
+}

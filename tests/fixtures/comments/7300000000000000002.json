@@ -1,0 +1,30 @@
+{
+  "provenance": "synthetic test data written for this repository",
+  "video_id": "7300000000000000002",
+  "video_url": "https://www.tiktok.com/@creator.two/video/7300000000000000002",
+  "pages": [
+    {
+      "has_more": false,
+      "cursor_out": null,
+      "comments": [
+        {
+          "comment_id": "7300000000000000301",
+          "text": "nothing relevant here",
+          "like_count": 5,
+          "reply_count": 0,
+          "owner_username": "someone",
+          "owner_user_id": "6100000000000000011"
+        },
+        {
+          "comment_id": "7300000000000000302",
+          "text": "Maelvorran and Mael Vorrano are not matches",
+          "like_count": 9,
+          "reply_count": 0,
+          "owner_username": "someone_else",
+          "owner_user_id": "6100000000000000012"
+        }
+      ]
+    }
+  ],
+  "replies": {}
+}

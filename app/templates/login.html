@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="page-login">
+  <main class="signin">
+    <h1>Comment likes</h1>
+    <p class="signin-note">Private dashboard. Sign in to continue.</p>
+
+    {% if error %}
+    <p class="alert" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="/login" autocomplete="on">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <button type="submit">Sign in</button>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "provenance": "synthetic test data written for this repository",
+  "video_id": "7300000000000000003",
+  "video_url": "https://www.tiktok.com/@creator.three/video/7300000000000000003",
+  "pages": [
+    {
+      "has_more": false,
+      "cursor_out": null,
+      "comments": [
+        {
+          "comment_id": "7300000000000000401",
+          "text": "Mael Vorran fan here",
+          "like_count": 4,
+          "reply_count": 0,
+          "owner_username": "double_poster",
+          "owner_user_id": "6100000000000000021"
+        },
+        {
+          "comment_id": "7300000000000000402",
+          "text": "seriously, read Mael Vorran",
+          "like_count": 6,
+          "reply_count": 0,
+          "owner_username": "double_poster",
+          "owner_user_id": "6100000000000000021"
+        },
+        {
+          "comment_id": "7300000000000000403",
+          "text": "unrelated leader",
+          "like_count": 88,
+          "reply_count": 0,
+          "owner_username": "other",
+          "owner_user_id": "6100000000000000022"
+        }
+      ]
+    }
+  ],
+  "replies": {}
+}
